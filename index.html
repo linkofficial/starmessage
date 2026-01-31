@@ -410,35 +410,11 @@
 </head>
 
 <body>
-  <a href="admin.html" class="admin-link">管理</a>
-
-  <style>
-    .admin-link {
-      position: fixed;
-      top: 20px;
-      right: 20px;
-      z-index: 5;
-      color: rgba(255, 255, 255, 0.4);
-      text-decoration: none;
-      font-size: 13px;
-      padding: 6px 12px;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 10px;
-      background: rgba(0, 0, 0, 0.2);
-      transition: 0.2s;
-    }
-
-    .admin-link:hover {
-      color: #fff;
-      background: rgba(255, 255, 255, 0.1);
-      border-color: rgba(255, 255, 255, 0.3);
-    }
-  </style>
   <div class="bg" aria-hidden="true"></div>
   <div id="sky" aria-label="星空"></div>
 
   <div class="panel" role="region" aria-label="傳情輸入">
-    <h1>連界空間許願角</h1>
+    <h1>將想對那人說的話，託付給這片夜空</h1>
     <div class="grid">
       <div>
         <label for="to">傳情對象：</label>
@@ -448,7 +424,7 @@
         <label for="content">傳情內容：（內容不得超過50字）</label>
         <textarea id="content" maxlength="50" placeholder="想悄悄說的話…（最多 50 字）"></textarea>
         <div class="row">
-          <div class="hint">送出後會化作一顆星，讓那個人看見你的心意。</div>
+          <div class="hint">送出後會化作一顆星，讓那個人看見你的心意。 Make by CHIHAKU</div>
           <div id="counter" class="counter">0 / 50</div>
         </div>
       </div>
@@ -468,301 +444,394 @@
 
   <div id="toast" class="toast" aria-live="polite"></div>
 
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import {
-      getFirestore, collection, query, orderBy, limit, onSnapshot,
-      addDoc, serverTimestamp
-    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-    import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import {
+    getFirestore, collection, query, orderBy, limit, onSnapshot,
+    addDoc, serverTimestamp
+  } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+  import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
-    // ====== Firebase 設定 ======
-    const firebaseConfig = {
-      apiKey: "AIzaSyDYUdcRw1iFkt16CIavTkfztXo5N-KeTLc",
-      authDomain: "star-message-be105.firebaseapp.com",
-      projectId: "star-message-be105",
-      appId: "1:439331905280:web:1f6fa1828796b35b1bdde5",
-    };
+  // ====== Firebase 設定 ======
+  const firebaseConfig = {
+    apiKey: "AIzaSyDYUdcRw1iFkt16CIavTkfztXo5N-KeTLc",
+    authDomain: "star-message-be105.firebaseapp.com",
+    projectId: "star-message-be105",
+    appId: "1:439331905280:web:1f6fa1828796b35b1bdde5",
+  };
 
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-    const auth = getAuth(app);
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+  const auth = getAuth(app);
 
-    // ====== DOM ======
-    const $ = (sel) => document.querySelector(sel);
-    const sky = $("#sky");
-    const inputTo = $("#to");
-    const inputContent = $("#content");
-    const counter = $("#counter");
-    const sendBtn = $("#send");
-    const modal = $("#modal");
-    const msgBox = $("#msg");
-    const closeBtn = $("#closeBtn");
-    const toast = $("#toast");
+  // ====== DOM ======
+  const $ = (sel) => document.querySelector(sel);
+  const sky = $("#sky");
+  const inputTo = $("#to");
+  const inputContent = $("#content");
+  const counter = $("#counter");
+  const sendBtn = $("#send");
+  const modal = $("#modal");
+  const msgBox = $("#msg");
+  const closeBtn = $("#closeBtn");
+  const toast = $("#toast");
 
-    // ====== 工具 ======
-    const rand = (min, max) => Math.random() * (max - min) + min;
-    const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
+  // ====== 工具 ======
+  const rand = (min, max) => Math.random() * (max - min) + min;
+  const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
+  const clamp = (v, min, max) => Math.min(max, Math.max(min, v));
 
-    // ====== 星星樣式 ======
-    const STAR_TYPES = ["outline", "solid", "striped", "burst", "spiral", "double"];
-    const COLORS = ["#4CC9F0", "#A78BFA", "#F472B6", "#F59E0B", "#22C55E", "#EF4444", "#60A5FA", "#FDE047"];
+  // ====== 星星樣式 ======
+  const STAR_TYPES = ["outline", "solid", "striped", "burst", "spiral", "double"];
+  const COLORS = ["#4CC9F0", "#A78BFA", "#F472B6", "#F59E0B", "#22C55E", "#EF4444", "#60A5FA", "#FDE047"];
 
-    function createStarSVG(type, color) {
-      const starPath = "M50 6 L61 36 L93 36 L67 54 L77 84 L50 66 L23 84 L33 54 L7 36 L39 36 Z";
-      const stroke = color, strokeWidth = 4, fillSoft = "rgba(255,255,255,0.06)";
+  function createStarSVG(type, color) {
+    const starPath = "M50 6 L61 36 L93 36 L67 54 L77 84 L50 66 L23 84 L33 54 L7 36 L39 36 Z";
+    const stroke = color, strokeWidth = 4, fillSoft = "rgba(255,255,255,0.06)";
 
-      if (type === "outline") {
-        return `<svg viewBox="0 0 100 100" aria-hidden="true">
-          <path d="${starPath}" fill="${fillSoft}" stroke="${stroke}" stroke-width="${strokeWidth}"
-            stroke-linejoin="round" stroke-linecap="round"/>
-        </svg>`;
-      }
-      if (type === "solid") {
-        return `<svg viewBox="0 0 100 100" aria-hidden="true">
-          <path d="${starPath}" fill="${color}" opacity="0.92" />
-          <path d="${starPath}" fill="none" stroke="rgba(255,255,255,0.45)" stroke-width="2"
-            stroke-linejoin="round" stroke-linecap="round"/>
-        </svg>`;
-      }
-      if (type === "striped") {
-        const clipId = "clip_" + Math.random().toString(16).slice(2);
-        return `<svg viewBox="0 0 100 100" aria-hidden="true">
-          <defs><clipPath id="${clipId}"><path d="${starPath}"/></clipPath></defs>
-          <path d="${starPath}" fill="${fillSoft}" stroke="${stroke}" stroke-width="${strokeWidth}"
-            stroke-linejoin="round" stroke-linecap="round"/>
-          <g clip-path="url(#${clipId})" opacity="0.95">
-            ${Array.from({ length: 8 }).map((_, i) => `
-              <path d="M-10 ${18 + i * 10} L110 ${8 + i * 10}" stroke="${color}" stroke-width="6" opacity="0.55" />
-            `).join("")}
-          </g>
-        </svg>`;
-      }
-      if (type === "burst") {
-        return `<svg viewBox="0 0 120 120" aria-hidden="true">
-          <g transform="translate(10 10)">
-            <path d="${starPath}" fill="${fillSoft}" stroke="${stroke}" stroke-width="${strokeWidth}"
-              stroke-linejoin="round" stroke-linecap="round"/>
-          </g>
-          ${[0, 60, 120, 180, 240, 300].map(a => `
-            <path d="M60 6 L60 18" stroke="${color}" stroke-width="4" stroke-linecap="round"
-              transform="rotate(${a} 60 60)" opacity="0.9"/>
-          `).join("")}
-        </svg>`;
-      }
-      if (type === "spiral") {
-        return `<svg viewBox="0 0 120 120" aria-hidden="true">
-          <g transform="translate(10 10)">
-            <path d="${starPath}" fill="${fillSoft}" stroke="${stroke}" stroke-width="${strokeWidth}"
-              stroke-linejoin="round" stroke-linecap="round"/>
-          </g>
-          <path d="M60 60
-                   m -18 0
-                   a 18 18 0 1 0 36 0
-                   a 10 10 0 1 1 -20 0
-                   a 5 5 0 1 0 10 0"
-                fill="none" stroke="${color}" stroke-width="4" stroke-linecap="round" opacity="0.9"/>
-        </svg>`;
-      }
+    if (type === "outline") {
       return `<svg viewBox="0 0 100 100" aria-hidden="true">
         <path d="${starPath}" fill="${fillSoft}" stroke="${stroke}" stroke-width="${strokeWidth}"
           stroke-linejoin="round" stroke-linecap="round"/>
-        <path d="M50 18 L58 40 L81 40 L62 53 L69 74 L50 61 L31 74 L38 53 L19 40 L42 40 Z"
-          fill="none" stroke="${color}" stroke-width="3" opacity="0.85"
+      </svg>`;
+    }
+    if (type === "solid") {
+      return `<svg viewBox="0 0 100 100" aria-hidden="true">
+        <path d="${starPath}" fill="${color}" opacity="0.92" />
+        <path d="${starPath}" fill="none" stroke="rgba(255,255,255,0.45)" stroke-width="2"
           stroke-linejoin="round" stroke-linecap="round"/>
       </svg>`;
     }
+    if (type === "striped") {
+      const clipId = "clip_" + Math.random().toString(16).slice(2);
+      return `<svg viewBox="0 0 100 100" aria-hidden="true">
+        <defs><clipPath id="${clipId}"><path d="${starPath}"/></clipPath></defs>
+        <path d="${starPath}" fill="${fillSoft}" stroke="${stroke}" stroke-width="${strokeWidth}"
+          stroke-linejoin="round" stroke-linecap="round"/>
+        <g clip-path="url(#${clipId})" opacity="0.95">
+          ${Array.from({ length: 8 }).map((_, i) => `
+            <path d="M-10 ${18 + i * 10} L110 ${8 + i * 10}" stroke="${color}" stroke-width="6" opacity="0.55" />
+          `).join("")}
+        </g>
+      </svg>`;
+    }
+    if (type === "burst") {
+      return `<svg viewBox="0 0 120 120" aria-hidden="true">
+        <g transform="translate(10 10)">
+          <path d="${starPath}" fill="${fillSoft}" stroke="${stroke}" stroke-width="${strokeWidth}"
+            stroke-linejoin="round" stroke-linecap="round"/>
+        </g>
+        ${[0, 60, 120, 180, 240, 300].map(a => `
+          <path d="M60 6 L60 18" stroke="${color}" stroke-width="4" stroke-linecap="round"
+            transform="rotate(${a} 60 60)" opacity="0.9"/>
+        `).join("")}
+      </svg>`;
+    }
+    if (type === "spiral") {
+      return `<svg viewBox="0 0 120 120" aria-hidden="true">
+        <g transform="translate(10 10)">
+          <path d="${starPath}" fill="${fillSoft}" stroke="${stroke}" stroke-width="${strokeWidth}"
+            stroke-linejoin="round" stroke-linecap="round"/>
+        </g>
+        <path d="M60 60
+                 m -18 0
+                 a 18 18 0 1 0 36 0
+                 a 10 10 0 1 1 -20 0
+                 a 5 5 0 1 0 10 0"
+              fill="none" stroke="${color}" stroke-width="4" stroke-linecap="round" opacity="0.9"/>
+      </svg>`;
+    }
+    return `<svg viewBox="0 0 100 100" aria-hidden="true">
+      <path d="${starPath}" fill="${fillSoft}" stroke="${stroke}" stroke-width="${strokeWidth}"
+        stroke-linejoin="round" stroke-linecap="round"/>
+      <path d="M50 18 L58 40 L81 40 L62 53 L69 74 L50 61 L31 74 L38 53 L19 40 L42 40 Z"
+        fill="none" stroke="${color}" stroke-width="3" opacity="0.85"
+        stroke-linejoin="round" stroke-linecap="round"/>
+    </svg>`;
+  }
 
-    // ====== 計數 ======
-    function updateCounter() {
-      const len = inputContent.value.length;
-      counter.textContent = `${len} / 50`;
-      counter.classList.toggle("bad", len > 50);
-    }
-    inputContent.addEventListener("input", updateCounter);
-    updateCounter();
+  // ====== 計數 ======
+  function updateCounter() {
+    const len = inputContent.value.length;
+    counter.textContent = `${len} / 50`;
+    counter.classList.toggle("bad", len > 50);
+  }
+  inputContent.addEventListener("input", updateCounter);
+  updateCounter();
 
-    // ====== Toast ======
-    let toastTimer = null;
-    function showToast(text) {
-      toast.textContent = text;
-      toast.classList.add("show");
-      clearTimeout(toastTimer);
-      toastTimer = setTimeout(() => toast.classList.remove("show"), 1800);
-    }
+  // ====== Toast ======
+  let toastTimer = null;
+  function showToast(text) {
+    toast.textContent = text;
+    toast.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toast.classList.remove("show"), 1800);
+  }
 
-    // ====== Modal ======
-    function formatMessage(to, content) {
-      return `親愛的${to}\n\n${content}`;
-    }
-    function openModal(starDoc) {
-      msgBox.textContent = formatMessage(starDoc.to, starDoc.content);
-      modal.classList.add("open");
-    }
-    function closeModal() {
-      modal.classList.remove("open");
-    }
-    closeBtn.addEventListener("click", closeModal);
-    modal.addEventListener("click", (e) => { if (e.target === modal) closeModal(); });
-    window.addEventListener("keydown", (e) => { if (e.key === "Escape") closeModal(); });
+  // ====== Modal ======
+  function formatMessage(to, content) {
+    return `親愛的${to}\n\n${content}`;
+  }
+  function openModal(starDoc) {
+    if (!starDoc) return;
+    msgBox.textContent = formatMessage(starDoc.to, starDoc.content);
+    modal.classList.add("open");
+  }
+  function closeModal() {
+    modal.classList.remove("open");
+  }
+  closeBtn.addEventListener("click", closeModal);
+  modal.addEventListener("click", (e) => { if (e.target === modal) closeModal(); });
+  window.addEventListener("keydown", (e) => { if (e.key === "Escape") closeModal(); });
 
-    // ====== 位置：相對座標 (0..1)，避開底部面板區 ======
-    function genPositionAvoidPanel() {
-      const margin = 0.05;
-      const panelTop = 0.74; // 底部 26% 保留給面板
-      return { x: rand(margin, 1 - margin), y: rand(margin, panelTop - margin) };
-    }
-    function toAbsXY(x01, y01) {
-      return { x: x01 * window.innerWidth, y: y01 * window.innerHeight };
-    }
+  // ====== 位置：相對座標 (0..1)，動態避開底部面板 + 防重疊 ======
+  function getPanelTop01() {
+    const panel = document.querySelector(".panel");
+    if (!panel) return 0.8;
+    const rect = panel.getBoundingClientRect();
+    const vh = window.innerHeight || 1;
+    return clamp(rect.top / vh, 0.15, 0.98);
+  }
 
-    // ====== 渲染星星（diff 渲染） ======
-    const rendered = new Map(); // id -> element
+  function toAbsXY(x01, y01) {
+    return { x: x01 * window.innerWidth, y: y01 * window.innerHeight };
+  }
 
-    function ensureStarElement(id) {
-      if (rendered.has(id)) return rendered.get(id);
-      const el = document.createElement("div");
-      el.className = "star";
-      el.dataset.id = id;
-      el.title = "點我打開";
-      sky.appendChild(el);
-      rendered.set(id, el);
-      return el;
+  // 產生「可用區域內」的一個候選點
+  function genCandidate01(sizePx = 56) {
+    const vw = window.innerWidth || 1;
+    const vh = window.innerHeight || 1;
+
+    // padding 會跟星星大小一起動，避免貼邊/壓到面板
+    const padPx = Math.max(sizePx * 0.65, 22);
+    const padX = padPx / vw;
+    const padY = padPx / vh;
+
+    const panelTop01 = getPanelTop01();
+    const yMax = clamp(panelTop01 - padY, 0.12, 1 - padY);
+
+    return {
+      x: rand(padX, 1 - padX),
+      y: rand(padY, yMax),
+    };
+  }
+
+  // 防重疊：檢查候選點與現有星星的距離是否足夠
+  function isNonOverlapping01(candidate, sizePx) {
+    const c = toAbsXY(candidate.x, candidate.y);
+    const buffer = 10; // 額外留白，讓星星看起來不會黏在一起
+
+    for (const s of starDocCache.values()) {
+      const otherSize = (typeof s.size === "number" ? s.size : 56);
+      const o = toAbsXY(s.x, s.y);
+
+      const minDist = (sizePx + otherSize) * 0.5 + buffer;
+      const dx = c.x - o.x;
+      const dy = c.y - o.y;
+      if (dx * dx + dy * dy < minDist * minDist) return false;
     }
+    return true;
+  }
 
-    function removeStarElement(id) {
-      const el = rendered.get(id);
-      if (!el) return;
-      el.remove();
-      rendered.delete(id);
+  // ✅ 對外使用：最多嘗試 N 次，挑一個不重疊的位置
+  function genPositionAvoidPanel(sizePx = 56) {
+    const tries = 22;
+    let last = genCandidate01(sizePx);
+    if (starDocCache.size === 0) return last;
+
+    for (let i = 0; i < tries; i++) {
+      const cand = genCandidate01(sizePx);
+      last = cand;
+      if (isNonOverlapping01(cand, sizePx)) return cand;
     }
+    // 如果星星很密集，找不到完全不重疊的，就回傳最後一次（至少避開面板/邊界）
+    return last;
+  }
 
-    function placeStar(el, starDoc) {
-      const { x, y } = toAbsXY(starDoc.x, starDoc.y);
-      el.style.left = x + "px";
-      el.style.top = y + "px";
-      el.style.setProperty("--size", (starDoc.size || 56) + "px");
+  // ====== 渲染星星（diff 渲染） ======
+  const rendered = new Map();     // id -> element
+  const starDocCache = new Map(); // id -> starDoc（用於防重疊、resize 重排、點擊顯示最新內容）
+
+  function ensureStarElement(id) {
+    if (rendered.has(id)) return rendered.get(id);
+    const el = document.createElement("div");
+    el.className = "star";
+    el.dataset.id = id;
+    el.title = "點我打開";
+    sky.appendChild(el);
+    rendered.set(id, el);
+    return el;
+  }
+
+  function removeStarElement(id) {
+    const el = rendered.get(id);
+    if (el) el.remove();
+    rendered.delete(id);
+    starDocCache.delete(id);
+  }
+
+  function applyStarPosition(el, starDoc) {
+    const { x, y } = toAbsXY(starDoc.x, starDoc.y);
+    el.style.left = x + "px";
+    el.style.top = y + "px";
+  }
+
+  function placeStar(el, starDoc) {
+    applyStarPosition(el, starDoc);
+
+    // size
+    el.style.setProperty("--size", (starDoc.size || 56) + "px");
+
+    // 只有 type/color 變了才重建 SVG（省 CPU）
+    const sig = `${starDoc.type}|${starDoc.color}`;
+    if (el.dataset.sig !== sig) {
       el.innerHTML = createStarSVG(starDoc.type, starDoc.color);
+      el.dataset.sig = sig;
+    }
 
+    // click 只綁一次
+    if (!el.dataset.bound) {
+      el.dataset.bound = "1";
       el.onclick = () => {
         if (el.classList.contains("opening")) return;
         el.classList.add("opening");
         const onEnd = () => {
           el.removeEventListener("animationend", onEnd);
           el.classList.remove("opening");
-          openModal(starDoc);
+          openModal(starDocCache.get(el.dataset.id));
         };
         el.addEventListener("animationend", onEnd);
       };
     }
+  }
 
-    // ====== Auth：匿名登入（必須，因為 rules 會要求 auth 才能 create） ======
-    let myUid = null;
-
-    async function ensureAnonAuth() {
-      return new Promise((resolve, reject) => {
-        onAuthStateChanged(auth, async (user) => {
-          try {
-            if (!user) {
-              await signInAnonymously(auth);
-              return;
-            }
-            myUid = user.uid;
-            resolve(user);
-          } catch (e) {
-            reject(e);
+  // ====== Auth：匿名登入 ======
+  let myUid = null;
+  async function ensureAnonAuth() {
+    return new Promise((resolve, reject) => {
+      onAuthStateChanged(auth, async (user) => {
+        try {
+          if (!user) {
+            await signInAnonymously(auth);
+            return;
           }
-        });
-      });
-    }
-
-    // ====== Firestore 即時監聽（最新 N 顆） ======
-    const MAX_RENDER = 300;
-    const starsRef = collection(db, "stars");
-    const q = query(starsRef, orderBy("createdAt", "desc"), limit(MAX_RENDER));
-
-    function startListener() {
-      onSnapshot(q, (snap) => {
-        const alive = new Set();
-        snap.forEach(d => {
-          alive.add(d.id);
-          const data = d.data();
-          if (!data || typeof data.x !== "number" || typeof data.y !== "number") return;
-
-          const starDoc = {
-            id: d.id,
-            to: data.to,
-            content: data.content,
-            x: data.x,
-            y: data.y,
-            type: data.type,
-            color: data.color,
-            size: data.size,
-          };
-
-          const el = ensureStarElement(d.id);
-          placeStar(el, starDoc);
-        });
-
-        for (const id of Array.from(rendered.keys())) {
-          if (!alive.has(id)) removeStarElement(id);
+          myUid = user.uid;
+          resolve(user);
+        } catch (e) {
+          reject(e);
         }
-      }, (err) => {
-        console.error(err);
-        showToast("讀取星空失敗（請確認 Firestore 規則/啟用狀態）。");
       });
-    }
-
-    // ====== 發送：直接 addDoc ======
-    sendBtn.addEventListener("click", async () => {
-      const to = inputTo.value.trim();
-      const content = inputContent.value.trim();
-
-      if (!to) { showToast("請先填「傳情對象」。"); inputTo.focus(); return; }
-      if (!content) { showToast("請先填「傳情內容」。"); inputContent.focus(); return; }
-      if (content.length > 50) { showToast("內容超過 50 字。"); inputContent.focus(); return; }
-
-      // --- 修改開始：根據螢幕寬度計算縮放比例 ---
-      // 以 1440px 為基準寬度，手機版大約會得到 0.3 ~ 0.5 的縮放倍率
-      const baseScale = Math.max(window.innerWidth / 1440, 0.4);
-
-      const docData = {
-        to,
-        content,
-        ownerUid: myUid,
-        x, y,
-        type: pick(STAR_TYPES),
-        color: pick(COLORS),
-        size: Math.round(rand(30, 55) * baseScale),
-        createdAt: serverTimestamp(),
-      };
-      // --- 修改結束 ---
-
-      sendBtn.disabled = true;
-      try {
-        await addDoc(starsRef, docData);
-        inputContent.value = "";
-        updateCounter();
-        showToast("已發送。");
-      } catch (e) {
-        console.error(e);
-        showToast("發送失敗（請確認已開 Anonymous Auth / Firestore rules）。");
-      } finally {
-        sendBtn.disabled = false;
-      }
     });
+  }
 
-    // ====== 啟動 ======
-    (async () => {
-      try {
-        await ensureAnonAuth();
-        startListener();
-      } catch (e) {
-        console.error(e);
-        showToast("匿名登入失敗（請確認 Firebase Auth 已啟用）。");
+  // ====== Firestore 即時監聽（最新 N 顆） ======
+  const MAX_RENDER = 150;
+  const starsRef = collection(db, "stars");
+  const q = query(starsRef, orderBy("createdAt", "desc"), limit(MAX_RENDER));
+
+  function startListener() {
+    onSnapshot(q, (snap) => {
+      const alive = new Set();
+
+      snap.forEach(d => {
+        alive.add(d.id);
+        const data = d.data();
+        if (!data || typeof data.x !== "number" || typeof data.y !== "number") return;
+
+        const starDoc = {
+          id: d.id,
+          to: data.to,
+          content: data.content,
+          x: data.x,
+          y: data.y,
+          type: data.type,
+          color: data.color,
+          size: data.size,
+        };
+
+        // 快取：防重疊 + 點擊顯示最新內容 + resize 重排
+        starDocCache.set(d.id, starDoc);
+
+        const el = ensureStarElement(d.id);
+        placeStar(el, starDoc);
+      });
+
+      // 清掉不在最新清單內的星星
+      for (const id of Array.from(rendered.keys())) {
+        if (!alive.has(id)) removeStarElement(id);
       }
-    })();
-  </script>
+    }, (err) => {
+      console.error(err);
+      showToast("讀取星空失敗（請確認 Firestore 規則/啟用狀態）。");
+    });
+  }
+
+  // resize：依快取重排現有星星位置
+  let resizeTimer = null;
+  window.addEventListener("resize", () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => {
+      for (const [id, el] of rendered.entries()) {
+        const doc = starDocCache.get(id);
+        if (!doc) continue;
+        applyStarPosition(el, doc);
+      }
+    }, 120);
+  });
+
+  // ====== 發送：直接 addDoc（含防重疊抽點） ======
+  sendBtn.addEventListener("click", async () => {
+    const to = inputTo.value.trim();
+    const content = inputContent.value.trim();
+
+    if (!to) { showToast("請先填「傳情對象」。"); inputTo.focus(); return; }
+    if (!content) { showToast("請先填「傳情內容」。"); inputContent.focus(); return; }
+    if (content.length > 50) { showToast("內容超過 50 字。"); inputContent.focus(); return; }
+
+    // --- 根據螢幕寬度計算縮放比例 ---
+    const baseScale = Math.max(window.innerWidth / 1440, 0.4);
+    const size = Math.round(rand(40, 70) * baseScale);
+
+    // ✅ 防重疊位置：會自動避開面板 + 盡量不靠近其他星星
+    const { x, y } = genPositionAvoidPanel(size);
+
+    const docData = {
+      to,
+      content,
+      ownerUid: myUid,
+      x, y,
+      type: pick(STAR_TYPES),
+      color: pick(COLORS),
+      size,
+      createdAt: serverTimestamp(),
+    };
+
+    sendBtn.disabled = true;
+    try {
+      await addDoc(starsRef, docData);
+      inputContent.value = "";
+      updateCounter();
+      showToast("已發送。");
+    } catch (e) {
+      console.error(e);
+      showToast("發送失敗（請確認已開 Anonymous Auth / Firestore rules）。");
+    } finally {
+      sendBtn.disabled = false;
+    }
+  });
+
+  // ====== 啟動 ======
+  (async () => {
+    try {
+      await ensureAnonAuth();
+      startListener();
+    } catch (e) {
+      console.error(e);
+      showToast("匿名登入失敗（請確認 Firebase Auth 已啟用）。");
+    }
+  })();
+</script>
+
 </body>
 
 </html>
