@@ -27,7 +27,7 @@
     }
     .bg::before{
       content:""; position:absolute; inset:0;
-      background-image: url("pexels-wayne-speedy-777933-9672629.jpg"); /* 放在 public/bg.jpg */
+      background-image: url("bg.jpg"); /* 放在同資料夾：public/bg.jpg */
       background-size: cover; background-position:center;
       opacity: 0.95;
       filter: saturate(1.1) contrast(1.05) brightness(0.95);
@@ -202,12 +202,6 @@
     }
     .ghost:hover{ background: rgba(255,255,255,0.10); }
 
-    .danger{
-      border: 1px solid rgba(255,130,160,0.35);
-      background: rgba(255,130,160,0.10);
-    }
-    .danger:hover{ background: rgba(255,130,160,0.16); }
-
     .closeX{
       position:absolute; top:12px; right:12px;
       width:36px; height:36px;
@@ -275,7 +269,6 @@
       <h2>星星裡的話</h2>
       <div id="msg" class="msg"></div>
       <div class="actions">
-        <button id="deleteBtn" class="ghost danger" type="button">刪除（需密碼）</button>
         <button id="closeBtn" class="ghost" type="button">關閉</button>
       </div>
     </div>
@@ -284,31 +277,24 @@
   <div id="toast" class="toast" aria-live="polite"></div>
 
   <script type="module">
-    /**
-     * Firebase Web SDK (modular) from CDN
-     * 你只需要填好 firebaseConfig（從 Firebase Console 複製）
-     */
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import { getFirestore, collection, query, orderBy, limit, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-    import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-functions.js";
+    import {
+      getFirestore, collection, query, orderBy, limit, onSnapshot,
+      addDoc, serverTimestamp
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
-    // ====== 1) 在這裡貼上你 Firebase Console 提供的設定 ======
+    // ====== Firebase 設定 ======
     const firebaseConfig = {
-      apiKey: "YOUR_API_KEY",
-      authDomain: "YOUR_PROJECT.firebaseapp.com",
-      projectId: "YOUR_PROJECT_ID",
-      appId: "YOUR_APP_ID",
-      // storageBucket / messagingSenderId / measurementId 可不填（本頁不需要）
+      apiKey: "AIzaSyDYUdcRw1iFkt16CIavTkfztXo5N-KeTLc",
+      authDomain: "star-message-be105.firebaseapp.com",
+      projectId: "star-message-be105",
+      appId: "1:439331905280:web:1f6fa1828796b35b1bdde5",
     };
 
-    // ====== 初始化 ======
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
-    const functions = getFunctions(app); // 若你 Functions 有指定 region，請改成 getFunctions(app, "asia-east1") 之類
-
-    // Cloud Functions callable
-    const addStarFn = httpsCallable(functions, "addStar");
-    const deleteStarFn = httpsCallable(functions, "deleteStar");
+    const auth = getAuth(app);
 
     // ====== DOM ======
     const $ = (sel) => document.querySelector(sel);
@@ -321,8 +307,11 @@
     const msgBox = $("#msg");
     const closeBtn = $("#closeBtn");
     const closeX = $("#closeX");
-    const deleteBtn = $("#deleteBtn");
     const toast = $("#toast");
+
+    // ====== 工具 ======
+    const rand = (min, max) => Math.random() * (max - min) + min;
+    const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
 
     // ====== 星星樣式 ======
     const STAR_TYPES = ["outline", "solid", "striped", "burst", "spiral", "double"];
@@ -411,38 +400,33 @@
       toastTimer = setTimeout(() => toast.classList.remove("show"), 1800);
     }
 
-    // ====== Modal + 當前選中星星 ======
-    let currentStarId = null;
-
+    // ====== Modal ======
     function formatMessage(to, content){
       return `給【${to}】\n\n${content}`;
     }
-
     function openModal(starDoc){
-      currentStarId = starDoc.id;
       msgBox.textContent = formatMessage(starDoc.to, starDoc.content);
       modal.classList.add("open");
     }
     function closeModal(){
       modal.classList.remove("open");
-      currentStarId = null;
     }
     closeBtn.addEventListener("click", closeModal);
     closeX.addEventListener("click", closeModal);
     modal.addEventListener("click", (e) => { if (e.target === modal) closeModal(); });
     window.addEventListener("keydown", (e) => { if (e.key === "Escape") closeModal(); });
 
-    // ====== 星星定位：使用相對座標 (0..1)，並避開下方面板 ======
-    function getPanelRect(){
-      return document.querySelector(".panel").getBoundingClientRect();
+    // ====== 位置：相對座標 (0..1)，避開底部面板區 ======
+    function genPositionAvoidPanel(){
+      const margin = 0.05;
+      const panelTop = 0.74; // 底部 26% 保留給面板
+      return { x: rand(margin, 1 - margin), y: rand(margin, panelTop - margin) };
     }
     function toAbsXY(x01, y01){
-      const vw = window.innerWidth;
-      const vh = window.innerHeight;
-      return { x: x01 * vw, y: y01 * vh };
+      return { x: x01 * window.innerWidth, y: y01 * window.innerHeight };
     }
 
-    // ====== 渲染星星（diff 渲染：避免全清空） ======
+    // ====== 渲染星星（diff 渲染） ======
     const rendered = new Map(); // id -> element
 
     function ensureStarElement(id){
@@ -468,14 +452,10 @@
       el.style.left = x + "px";
       el.style.top  = y + "px";
       el.style.setProperty("--size", (starDoc.size || 56) + "px");
-
-      // SVG 若已存在且相同則不重建（簡化：每次都 set 也可）
       el.innerHTML = createStarSVG(starDoc.type, starDoc.color);
 
-      // 點擊：先播放「打開星星」動畫，再開卡片
       el.onclick = () => {
         if (el.classList.contains("opening")) return;
-
         el.classList.add("opening");
         const onEnd = () => {
           el.removeEventListener("animationend", onEnd);
@@ -486,51 +466,64 @@
       };
     }
 
-    // ====== Firestore 即時監聽：取最新 N 顆（上限由雲端函式控制，但前端也只讀 N 顆以省負擔） ======
+    // ====== Auth：匿名登入（必須，因為 rules 會要求 auth 才能 create） ======
+    let myUid = null;
+
+    async function ensureAnonAuth(){
+      return new Promise((resolve, reject) => {
+        onAuthStateChanged(auth, async (user) => {
+          try{
+            if (!user){
+              await signInAnonymously(auth);
+              return;
+            }
+            myUid = user.uid;
+            resolve(user);
+          }catch(e){
+            reject(e);
+          }
+        });
+      });
+    }
+
+    // ====== Firestore 即時監聽（最新 N 顆） ======
     const MAX_RENDER = 300;
     const starsRef = collection(db, "stars");
     const q = query(starsRef, orderBy("createdAt", "desc"), limit(MAX_RENDER));
 
-    onSnapshot(q, (snap) => {
-      const alive = new Set();
-      snap.forEach(doc => {
-        alive.add(doc.id);
-        const data = doc.data();
+    function startListener(){
+      onSnapshot(q, (snap) => {
+        const alive = new Set();
+        snap.forEach(d => {
+          alive.add(d.id);
+          const data = d.data();
+          if (!data || typeof data.x !== "number" || typeof data.y !== "number") return;
 
-        // 防呆：必要欄位缺失就跳過
-        if (!data || typeof data.x !== "number" || typeof data.y !== "number") return;
+          const starDoc = {
+            id: d.id,
+            to: data.to,
+            content: data.content,
+            x: data.x,
+            y: data.y,
+            type: data.type,
+            color: data.color,
+            size: data.size,
+          };
 
-        const starDoc = {
-          id: doc.id,
-          to: data.to,
-          content: data.content,
-          x: data.x,
-          y: data.y,
-          type: data.type,
-          color: data.color,
-          size: data.size,
-        };
+          const el = ensureStarElement(d.id);
+          placeStar(el, starDoc);
+        });
 
-        const el = ensureStarElement(doc.id);
-        placeStar(el, starDoc);
+        for (const id of Array.from(rendered.keys())){
+          if (!alive.has(id)) removeStarElement(id);
+        }
+      }, (err) => {
+        console.error(err);
+        showToast("讀取星空失敗（請確認 Firestore 規則/啟用狀態）。");
       });
+    }
 
-      // 移除不在最新清單內的星星
-      for (const id of Array.from(rendered.keys())){
-        if (!alive.has(id)) removeStarElement(id);
-      }
-    }, (err) => {
-      console.error(err);
-      showToast("讀取星空失敗（請確認 Firebase 設定與規則）。");
-    });
-
-    // 視窗改變時，重算已存在星星位置
-    window.addEventListener("resize", () => {
-      // 重新抓目前 DOM 上每顆星，從 dataset 取不到 doc，因此簡單做法是等待下一次 snapshot 自動更新位置。
-      // 若你想即時重排，可把 doc 存在 Map，resize 時重算。
-    });
-
-    // ====== 發送：呼叫 Cloud Function addStar（伺服端會生成位置/樣式並控上限） ======
+    // ====== 發送：直接 addDoc ======
     sendBtn.addEventListener("click", async () => {
       const to = inputTo.value.trim();
       const content = inputContent.value.trim();
@@ -539,40 +532,43 @@
       if (!content){ showToast("請先填「傳情內容」。"); inputContent.focus(); return; }
       if (content.length > 50){ showToast("內容超過 50 字。"); inputContent.focus(); return; }
 
+      const { x, y } = genPositionAvoidPanel();
+
+      const docData = {
+        to,
+        content,
+        ownerUid: myUid,               // rules 會驗證 ownerUid 必須等於 auth.uid
+        x, y,
+        type: pick(STAR_TYPES),
+        color: pick(COLORS),
+        size: Math.round(rand(44, 78)),
+        createdAt: serverTimestamp(),  // 用來排序
+      };
+
       sendBtn.disabled = true;
       try{
-        await addStarFn({ to, content });
+        await addDoc(starsRef, docData);
         inputContent.value = "";
         updateCounter();
         showToast("已發送。");
       }catch(e){
         console.error(e);
-        showToast("發送失敗（請確認 Functions 已部署）。");
+        showToast("發送失敗（請確認已開 Anonymous Auth / Firestore rules）。");
       }finally{
         sendBtn.disabled = false;
       }
     });
 
-    // ====== 刪除：需輸入 520，呼叫 Cloud Function deleteStar ======
-    deleteBtn.addEventListener("click", async () => {
-      if (!currentStarId) return;
-
-      const pin = window.prompt("輸入刪除密碼：");
-      if (pin === null) return; // 使用者取消
-      if (pin !== "520"){ showToast("密碼錯誤。"); return; }
-
-      deleteBtn.disabled = true;
+    // ====== 啟動 ======
+    (async () => {
       try{
-        await deleteStarFn({ id: currentStarId, pin });
-        showToast("已刪除。");
-        closeModal();
+        await ensureAnonAuth();
+        startListener();
       }catch(e){
         console.error(e);
-        showToast("刪除失敗（請確認 Functions/規則）。");
-      }finally{
-        deleteBtn.disabled = false;
+        showToast("匿名登入失敗（請確認 Firebase Auth 已啟用）。");
       }
-    });
+    })();
   </script>
 </body>
 </html>
