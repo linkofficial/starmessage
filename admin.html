@@ -1,0 +1,262 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>管理員面板｜星空傳情</title>
+  <style>
+    body{ margin:0; font-family: ui-sans-serif, system-ui, -apple-system, "Noto Sans TC", "Microsoft JhengHei", sans-serif; background:#070A18; color:rgba(255,255,255,0.9); }
+    .wrap{ max-width: 880px; margin: 0 auto; padding: 22px; }
+    .card{ background: rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); border-radius: 18px; padding: 16px; margin: 14px 0; }
+    label{ display:block; margin: 10px 0 6px; color: rgba(255,255,255,0.7); font-size: 13px; }
+    input{ width:100%; padding: 10px 12px; border-radius: 14px; border:1px solid rgba(255,255,255,0.14); background: rgba(0,0,0,0.25); color: rgba(255,255,255,0.92); outline:none; }
+    button{ padding: 10px 14px; border-radius: 14px; border:1px solid rgba(255,255,255,0.14); background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.9); cursor:pointer; font-weight:700; letter-spacing: .04em; }
+    button:hover{ background: rgba(255,255,255,0.12); }
+    button:disabled{ opacity: .55; cursor: not-allowed; }
+    .row{ display:flex; gap: 10px; flex-wrap: wrap; }
+    .danger{ border-color: rgba(255,120,160,0.35); background: rgba(255,120,160,0.12); }
+    .danger:hover{ background: rgba(255,120,160,0.18); }
+    .muted{ color: rgba(255,255,255,0.7); font-size: 13px; line-height: 1.6; }
+    .mono{ font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; }
+    .ok{ color: #7CFFB2; }
+    .bad{ color: #FF8AA8; }
+    .sep{ height:1px; background: rgba(255,255,255,0.10); margin: 14px 0; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1 style="margin:0 0 10px;">管理員面板</h1>
+    <div class="muted">
+      用 Email/Password 登入後，如果你的 UID 有被加入 <span class="mono">admins/{uid}</span>，
+      才能「一鍵備份」與「一鍵刪除」。
+    </div>
+
+    <div class="card" id="loginCard">
+      <h2 style="margin:0 0 8px; font-size:16px;">登入</h2>
+      <label>Email</label>
+      <input id="email" type="email" placeholder="admin@example.com" />
+      <label>Password</label>
+      <input id="password" type="password" placeholder="••••••••" />
+      <div class="row" style="margin-top:12px;">
+        <button id="loginBtn">登入</button>
+        <button id="logoutBtn" style="display:none;">登出</button>
+      </div>
+      <div id="status" class="muted" style="margin-top:10px;"></div>
+    </div>
+
+    <div class="card" id="adminCard" style="display:none;">
+      <h2 style="margin:0 0 8px; font-size:16px;">管理操作</h2>
+      <div class="muted">你的 UID：<span id="uid" class="mono"></span></div>
+      <div class="muted">Admin 狀態：<span id="isAdmin" class="mono"></span></div>
+
+      <div class="sep"></div>
+
+      <div class="row">
+        <button id="backupBtn">一鍵備份（下載 JSON）</button>
+        <button id="deleteAllBtn" class="danger">一鍵刪除（刪光 stars）</button>
+      </div>
+
+      <div id="oplog" class="muted" style="margin-top:12px;"></div>
+      <div class="muted" style="margin-top:10px;">
+        提醒：刪除會分批（每批最多 500 筆），備份會分頁讀取（每頁 500 筆）。中途不要關閉頁面。
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    import {
+      getFirestore, doc, getDoc,
+      collection, query, orderBy, limit, getDocs, startAfter,
+      writeBatch
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDYUdcRw1iFkt16CIavTkfztXo5N-KeTLc",
+      authDomain: "star-message-be105.firebaseapp.com",
+      projectId: "star-message-be105",
+      appId: "1:439331905280:web:1f6fa1828796b35b1bdde5",
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    const $ = (s) => document.querySelector(s);
+    const status = $("#status");
+    const oplog = $("#oplog");
+
+    function setStatus(html){ status.innerHTML = html; }
+    function log(html){ oplog.innerHTML = html; }
+
+    async function checkIsAdmin(uid){
+      const ref = doc(db, "admins", uid);
+      const snap = await getDoc(ref);
+      return snap.exists();
+    }
+
+    function downloadJson(filename, obj){
+      const blob = new Blob([JSON.stringify(obj, null, 2)], { type: "application/json;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    }
+
+    // ✅ 完整備份：分頁抓完所有 stars（每頁 500）
+    async function backupAllStars(){
+      const pageSize = 500;
+      const all = [];
+      let lastDoc = null;
+      let page = 0;
+
+      while (true){
+        let q = query(collection(db, "stars"), orderBy("createdAt", "asc"), limit(pageSize));
+        if (lastDoc) q = query(collection(db, "stars"), orderBy("createdAt", "asc"), startAfter(lastDoc), limit(pageSize));
+
+        const snap = await getDocs(q);
+        if (snap.empty) break;
+
+        snap.forEach(d => all.push({ id: d.id, ...d.data() }));
+        lastDoc = snap.docs[snap.docs.length - 1];
+        page += 1;
+
+        log(`<span class="ok">備份中…</span> 已讀取 ${all.length} 筆（第 ${page} 頁）`);
+        if (snap.size < pageSize) break;
+      }
+
+      const ts = new Date().toISOString().replace(/[:.]/g, "-");
+      downloadJson(`stars-backup-${ts}.json`, {
+        note: "Full backup of stars (asc by createdAt)",
+        exportedAt: new Date().toISOString(),
+        count: all.length,
+        stars: all
+      });
+
+      return all.length;
+    }
+
+    // 一鍵刪除：分批 500 delete（需要 rules 允許 admin delete）
+    async function deleteAllStars(){
+      let total = 0;
+
+      while (true){
+        const snap = await getDocs(query(collection(db, "stars"), orderBy("createdAt", "asc"), limit(500)));
+        if (snap.empty) break;
+
+        const batch = writeBatch(db);
+        snap.forEach(d => batch.delete(d.ref));
+        await batch.commit();
+
+        total += snap.size;
+        log(`<span class="ok">刪除中…</span> 已刪除 ${total} 筆`);
+      }
+
+      return total;
+    }
+
+    // 登入/登出
+    $("#loginBtn").addEventListener("click", async () => {
+      const email = $("#email").value.trim();
+      const password = $("#password").value;
+
+      if (!email || !password){
+        setStatus(`<span class="bad">請輸入 Email 與密碼。</span>`);
+        return;
+      }
+
+      try{
+        await signInWithEmailAndPassword(auth, email, password);
+      }catch(e){
+        console.error(e);
+        setStatus(`<span class="bad">登入失敗：</span><span class="mono">${e.code || e.message}</span>`);
+      }
+    });
+
+    $("#logoutBtn").addEventListener("click", async () => {
+      await signOut(auth);
+    });
+
+    // 狀態切換
+    onAuthStateChanged(auth, async (user) => {
+      const backupBtn = $("#backupBtn");
+      const deleteBtn = $("#deleteAllBtn");
+
+      if (!user){
+        $("#logoutBtn").style.display = "none";
+        $("#adminCard").style.display = "none";
+        setStatus(`尚未登入。`);
+        return;
+      }
+
+      $("#logoutBtn").style.display = "inline-block";
+      $("#uid").textContent = user.uid;
+      setStatus(`<span class="ok">已登入：</span><span class="mono">${user.email || ""}</span>`);
+
+      let ok = false;
+      try{
+        ok = await checkIsAdmin(user.uid);
+      }catch(e){
+        console.error(e);
+      }
+
+      $("#isAdmin").textContent = ok ? "YES" : "NO";
+      $("#isAdmin").className = "mono " + (ok ? "ok" : "bad");
+      $("#adminCard").style.display = "block";
+
+      if (!ok){
+        log(`<span class="bad">你尚未被加入 admins/{uid}，無法執行刪除/備份。</span><br/>
+             <span class="muted">請到 Firestore Console 建立文件：</span>
+             <span class="mono">admins/${user.uid}</span>（欄位隨便填 enabled:true）`);
+        backupBtn.disabled = true;
+        deleteBtn.disabled = true;
+        return;
+      }
+
+      log(`<span class="ok">管理員權限 OK。</span>`);
+      backupBtn.disabled = false;
+      deleteBtn.disabled = false;
+    });
+
+    // 一鍵備份
+    $("#backupBtn").addEventListener("click", async () => {
+      const btn = $("#backupBtn");
+      btn.disabled = true;
+      try{
+        log(`備份準備中…`);
+        const n = await backupAllStars();
+        log(`<span class="ok">備份完成：</span>已下載 JSON（${n} 筆）。`);
+      }catch(e){
+        console.error(e);
+        log(`<span class="bad">備份失敗：</span><span class="mono">${e.code || e.message}</span>`);
+      }finally{
+        btn.disabled = false;
+      }
+    });
+
+    // 一鍵刪除
+    $("#deleteAllBtn").addEventListener("click", async () => {
+      const btn = $("#deleteAllBtn");
+      const confirmText = prompt("這會刪除所有星星資料。若確定，請輸入：DELETE");
+      if (confirmText !== "DELETE") return;
+
+      btn.disabled = true;
+      try{
+        log(`刪除準備中…`);
+        const total = await deleteAllStars();
+        log(`<span class="ok">刪除完成：</span>共刪除 ${total} 筆。`);
+      }catch(e){
+        console.error(e);
+        log(`<span class="bad">刪除失敗：</span><span class="mono">${e.code || e.message}</span>`);
+      }finally{
+        btn.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>
