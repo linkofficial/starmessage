@@ -15,9 +15,7 @@
       --radius: 18px;
     }
 
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
 
     html,
     body {
@@ -49,7 +47,6 @@
       position: absolute;
       inset: 0;
       background-image: url("bg.jpg");
-      /* 放在同資料夾：public/bg.jpg */
       background-size: cover;
       background-position: center;
       opacity: 0.95;
@@ -98,8 +95,46 @@
       font-size: 14px;
       font-weight: 600;
       letter-spacing: 0.06em;
-      margin: 0 0 10px;
+      margin: 0 0 8px;
       color: rgba(255, 255, 255, 0.8);
+    }
+
+    /* 分頁控制 */
+    .pager {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 10px;
+      margin: 4px 0 10px;
+    }
+
+    .pagerBtn {
+      width: 40px;
+      height: 36px;
+      border-radius: 14px;
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      background: rgba(255, 255, 255, 0.06);
+      color: rgba(255, 255, 255, 0.88);
+      cursor: pointer;
+      font-weight: 900;
+      transition: .12s ease;
+      user-select: none;
+    }
+
+    .pagerBtn:hover { background: rgba(255, 255, 255, 0.10); }
+
+    .pagerBtn:disabled {
+      opacity: .45;
+      cursor: not-allowed;
+    }
+
+    .pageLabel {
+      color: rgba(255, 255, 255, 0.72);
+      font-size: 12px;
+      letter-spacing: .05em;
+      user-select: none;
+      min-width: 110px;
+      text-align: center;
     }
 
     .grid {
@@ -110,13 +145,10 @@
     }
 
     @media (max-width: 720px) {
-      .grid {
-        grid-template-columns: 1fr;
-      }
-
-      .btn {
-        width: 100%;
-      }
+      .grid { grid-template-columns: 1fr; }
+      .btn { width: 100%; }
+      .pager { justify-content: space-between; }
+      .pageLabel { text-align: center; flex: 1; }
     }
 
     label {
@@ -170,9 +202,7 @@
       color: rgba(255, 255, 255, 0.68);
     }
 
-    .counter.bad {
-      color: rgba(255, 130, 160, 0.95);
-    }
+    .counter.bad { color: rgba(255, 130, 160, 0.95); }
 
     .btn {
       border: 1px solid rgba(255, 255, 255, 0.18);
@@ -195,9 +225,7 @@
       background: linear-gradient(180deg, rgba(200, 240, 255, 0.26), rgba(130, 170, 255, 0.16));
     }
 
-    .btn:active {
-      transform: translateY(0px) scale(0.99);
-    }
+    .btn:active { transform: translateY(0px) scale(0.99); }
 
     /* 星星 */
     .star {
@@ -213,11 +241,7 @@
       will-change: transform, opacity;
     }
 
-    .star svg {
-      width: 100%;
-      height: 100%;
-      display: block;
-    }
+    .star svg { width: 100%; height: 100%; display: block; }
 
     .star:hover {
       transform: translate(-50%, -50%) scale(1.04);
@@ -225,28 +249,16 @@
     }
 
     @keyframes popIn {
-      to {
-        opacity: 1;
-        transform: translate(-50%, -50%) scale(1);
-      }
+      to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
     }
 
     @keyframes floaty {
-
-      0%,
-      100% {
-        margin-top: 0px;
-      }
-
-      50% {
-        margin-top: -8px;
-      }
+      0%, 100% { margin-top: 0px; }
+      50% { margin-top: -8px; }
     }
 
     /* 打開星星動畫（點擊後） */
-    .star.opening {
-      animation: openStar 520ms ease forwards;
-    }
+    .star.opening { animation: openStar 520ms ease forwards; }
 
     @keyframes openStar {
       0% {
@@ -254,16 +266,8 @@
         transform: translate(-50%, -50%) scale(1) rotate(0deg);
         filter: drop-shadow(0 12px 26px rgba(0, 0, 0, 0.45));
       }
-
-      60% {
-        opacity: 1;
-        transform: translate(-50%, -50%) scale(1.25) rotate(10deg);
-      }
-
-      100% {
-        opacity: 0;
-        transform: translate(-50%, -50%) scale(1.55) rotate(20deg);
-      }
+      60% { opacity: 1; transform: translate(-50%, -50%) scale(1.25) rotate(10deg); }
+      100% { opacity: 0; transform: translate(-50%, -50%) scale(1.55) rotate(20deg); }
     }
 
     /* 彈窗（卡片展開） */
@@ -279,9 +283,7 @@
       backdrop-filter: blur(6px);
     }
 
-    .modal.open {
-      display: flex;
-    }
+    .modal.open { display: flex; }
 
     .card {
       width: min(520px, 100%);
@@ -296,15 +298,8 @@
     }
 
     @keyframes cardIn {
-      0% {
-        opacity: 0;
-        transform: translateY(6px) scaleY(0.86);
-      }
-
-      100% {
-        opacity: 1;
-        transform: translateY(0px) scaleY(1);
-      }
+      0% { opacity: 0; transform: translateY(6px) scaleY(0.86); }
+      100% { opacity: 1; transform: translateY(0px) scaleY(1); }
     }
 
     .card h2 {
@@ -345,28 +340,7 @@
       letter-spacing: 0.04em;
     }
 
-    .ghost:hover {
-      background: rgba(255, 255, 255, 0.10);
-    }
-
-    .closeX {
-      position: absolute;
-      top: 12px;
-      right: 12px;
-      width: 36px;
-      height: 36px;
-      border-radius: 12px;
-      border: 1px solid rgba(255, 255, 255, 0.16);
-      background: rgba(255, 255, 255, 0.06);
-      color: rgba(255, 255, 255, 0.86);
-      cursor: pointer;
-      transition: 0.12s ease;
-      font-weight: 800;
-    }
-
-    .closeX:hover {
-      background: rgba(255, 255, 255, 0.10);
-    }
+    .ghost:hover { background: rgba(255, 255, 255, 0.10); }
 
     /* Toast */
     .toast {
@@ -387,24 +361,12 @@
       backdrop-filter: blur(10px);
     }
 
-    .toast.show {
-      display: inline-flex;
-    }
+    .toast.show { display: inline-flex; }
 
     @media (prefers-reduced-motion: reduce) {
-      .star {
-        animation: none;
-        opacity: 1;
-        transform: translate(-50%, -50%);
-      }
-
-      .bg::before {
-        transform: none;
-      }
-
-      .card {
-        animation: none;
-      }
+      .star { animation: none; opacity: 1; transform: translate(-50%, -50%); }
+      .bg::before { transform: none; }
+      .card { animation: none; }
     }
   </style>
 </head>
@@ -415,6 +377,14 @@
 
   <div class="panel" role="region" aria-label="傳情輸入">
     <h1>將想對那人說的話，託付給這片夜空</h1>
+
+    <!-- ✅ 分頁控制：最新頁永遠是第 1 頁 -->
+    <div class="pager" aria-label="換頁">
+      <button id="pagePrev" class="pagerBtn" type="button" title="較新（上一頁）">◀</button>
+      <div id="pageLabel" class="pageLabel">第 1 頁（最新）</div>
+      <button id="pageNext" class="pagerBtn" type="button" title="較舊（下一頁）">▶</button>
+    </div>
+
     <div class="grid">
       <div>
         <label for="to">傳情對象：</label>
@@ -444,297 +414,275 @@
 
   <div id="toast" class="toast" aria-live="polite"></div>
 
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-  import {
-    getFirestore, collection, query, orderBy, limit, onSnapshot,
-    addDoc, serverTimestamp
-  } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-  import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import {
+      getFirestore, collection, query, orderBy, limit, onSnapshot,
+      addDoc, serverTimestamp, getDocs, startAfter
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
-  // ====== Firebase 設定 ======
-  const firebaseConfig = {
-    apiKey: "AIzaSyDYUdcRw1iFkt16CIavTkfztXo5N-KeTLc",
-    authDomain: "star-message-be105.firebaseapp.com",
-    projectId: "star-message-be105",
-    appId: "1:439331905280:web:1f6fa1828796b35b1bdde5",
-  };
-
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
-  const auth = getAuth(app);
-
-  // ====== DOM ======
-  const $ = (sel) => document.querySelector(sel);
-  const sky = $("#sky");
-  const inputTo = $("#to");
-  const inputContent = $("#content");
-  const counter = $("#counter");
-  const sendBtn = $("#send");
-  const modal = $("#modal");
-  const msgBox = $("#msg");
-  const closeBtn = $("#closeBtn");
-  const toast = $("#toast");
-
-  // ====== 工具 ======
-  const rand = (min, max) => Math.random() * (max - min) + min;
-  const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
-  const clamp = (v, min, max) => Math.min(max, Math.max(min, v));
-
-  // ====== 星星樣式 ======
-  const STAR_TYPES = ["outline", "solid", "striped", "burst", "spiral", "double"];
-  const COLORS = ["#4CC9F0", "#A78BFA", "#F472B6", "#F59E0B", "#22C55E", "#EF4444", "#60A5FA", "#FDE047"];
-
-  function createStarSVG(type, color) {
-    const starPath = "M50 6 L61 36 L93 36 L67 54 L77 84 L50 66 L23 84 L33 54 L7 36 L39 36 Z";
-    const stroke = color, strokeWidth = 4, fillSoft = "rgba(255,255,255,0.06)";
-
-    if (type === "outline") {
-      return `<svg viewBox="0 0 100 100" aria-hidden="true">
-        <path d="${starPath}" fill="${fillSoft}" stroke="${stroke}" stroke-width="${strokeWidth}"
-          stroke-linejoin="round" stroke-linecap="round"/>
-      </svg>`;
-    }
-    if (type === "solid") {
-      return `<svg viewBox="0 0 100 100" aria-hidden="true">
-        <path d="${starPath}" fill="${color}" opacity="0.92" />
-        <path d="${starPath}" fill="none" stroke="rgba(255,255,255,0.45)" stroke-width="2"
-          stroke-linejoin="round" stroke-linecap="round"/>
-      </svg>`;
-    }
-    if (type === "striped") {
-      const clipId = "clip_" + Math.random().toString(16).slice(2);
-      return `<svg viewBox="0 0 100 100" aria-hidden="true">
-        <defs><clipPath id="${clipId}"><path d="${starPath}"/></clipPath></defs>
-        <path d="${starPath}" fill="${fillSoft}" stroke="${stroke}" stroke-width="${strokeWidth}"
-          stroke-linejoin="round" stroke-linecap="round"/>
-        <g clip-path="url(#${clipId})" opacity="0.95">
-          ${Array.from({ length: 8 }).map((_, i) => `
-            <path d="M-10 ${18 + i * 10} L110 ${8 + i * 10}" stroke="${color}" stroke-width="6" opacity="0.55" />
-          `).join("")}
-        </g>
-      </svg>`;
-    }
-    if (type === "burst") {
-      return `<svg viewBox="0 0 120 120" aria-hidden="true">
-        <g transform="translate(10 10)">
-          <path d="${starPath}" fill="${fillSoft}" stroke="${stroke}" stroke-width="${strokeWidth}"
-            stroke-linejoin="round" stroke-linecap="round"/>
-        </g>
-        ${[0, 60, 120, 180, 240, 300].map(a => `
-          <path d="M60 6 L60 18" stroke="${color}" stroke-width="4" stroke-linecap="round"
-            transform="rotate(${a} 60 60)" opacity="0.9"/>
-        `).join("")}
-      </svg>`;
-    }
-    if (type === "spiral") {
-      return `<svg viewBox="0 0 120 120" aria-hidden="true">
-        <g transform="translate(10 10)">
-          <path d="${starPath}" fill="${fillSoft}" stroke="${stroke}" stroke-width="${strokeWidth}"
-            stroke-linejoin="round" stroke-linecap="round"/>
-        </g>
-        <path d="M60 60
-                 m -18 0
-                 a 18 18 0 1 0 36 0
-                 a 10 10 0 1 1 -20 0
-                 a 5 5 0 1 0 10 0"
-              fill="none" stroke="${color}" stroke-width="4" stroke-linecap="round" opacity="0.9"/>
-      </svg>`;
-    }
-    return `<svg viewBox="0 0 100 100" aria-hidden="true">
-      <path d="${starPath}" fill="${fillSoft}" stroke="${stroke}" stroke-width="${strokeWidth}"
-        stroke-linejoin="round" stroke-linecap="round"/>
-      <path d="M50 18 L58 40 L81 40 L62 53 L69 74 L50 61 L31 74 L38 53 L19 40 L42 40 Z"
-        fill="none" stroke="${color}" stroke-width="3" opacity="0.85"
-        stroke-linejoin="round" stroke-linecap="round"/>
-    </svg>`;
-  }
-
-  // ====== 計數 ======
-  function updateCounter() {
-    const len = inputContent.value.length;
-    counter.textContent = `${len} / 50`;
-    counter.classList.toggle("bad", len > 50);
-  }
-  inputContent.addEventListener("input", updateCounter);
-  updateCounter();
-
-  // ====== Toast ======
-  let toastTimer = null;
-  function showToast(text) {
-    toast.textContent = text;
-    toast.classList.add("show");
-    clearTimeout(toastTimer);
-    toastTimer = setTimeout(() => toast.classList.remove("show"), 1800);
-  }
-
-  // ====== Modal ======
-  function formatMessage(to, content) {
-    return `親愛的${to}\n\n${content}`;
-  }
-  function openModal(starDoc) {
-    if (!starDoc) return;
-    msgBox.textContent = formatMessage(starDoc.to, starDoc.content);
-    modal.classList.add("open");
-  }
-  function closeModal() {
-    modal.classList.remove("open");
-  }
-  closeBtn.addEventListener("click", closeModal);
-  modal.addEventListener("click", (e) => { if (e.target === modal) closeModal(); });
-  window.addEventListener("keydown", (e) => { if (e.key === "Escape") closeModal(); });
-
-  // ====== 位置：相對座標 (0..1)，動態避開底部面板 + 防重疊 ======
-  function getPanelTop01() {
-    const panel = document.querySelector(".panel");
-    if (!panel) return 0.8;
-    const rect = panel.getBoundingClientRect();
-    const vh = window.innerHeight || 1;
-    return clamp(rect.top / vh, 0.15, 0.98);
-  }
-
-  function toAbsXY(x01, y01) {
-    return { x: x01 * window.innerWidth, y: y01 * window.innerHeight };
-  }
-
-  // 產生「可用區域內」的一個候選點
-  function genCandidate01(sizePx = 56) {
-    const vw = window.innerWidth || 1;
-    const vh = window.innerHeight || 1;
-
-    // padding 會跟星星大小一起動，避免貼邊/壓到面板
-    const padPx = Math.max(sizePx * 0.65, 22);
-    const padX = padPx / vw;
-    const padY = padPx / vh;
-
-    const panelTop01 = getPanelTop01();
-    const yMax = clamp(panelTop01 - padY, 0.12, 1 - padY);
-
-    return {
-      x: rand(padX, 1 - padX),
-      y: rand(padY, yMax),
+    // ====== Firebase 設定 ======
+    const firebaseConfig = {
+      apiKey: "AIzaSyDYUdcRw1iFkt16CIavTkfztXo5N-KeTLc",
+      authDomain: "star-message-be105.firebaseapp.com",
+      projectId: "star-message-be105",
+      appId: "1:439331905280:web:1f6fa1828796b35b1bdde5",
     };
-  }
 
-  // 防重疊：檢查候選點與現有星星的距離是否足夠
-  function isNonOverlapping01(candidate, sizePx) {
-    const c = toAbsXY(candidate.x, candidate.y);
-    const buffer = 10; // 額外留白，讓星星看起來不會黏在一起
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
 
-    for (const s of starDocCache.values()) {
-      const otherSize = (typeof s.size === "number" ? s.size : 56);
-      const o = toAbsXY(s.x, s.y);
+    // ====== DOM ======
+    const $ = (sel) => document.querySelector(sel);
+    const sky = $("#sky");
+    const inputTo = $("#to");
+    const inputContent = $("#content");
+    const counter = $("#counter");
+    const sendBtn = $("#send");
+    const modal = $("#modal");
+    const msgBox = $("#msg");
+    const closeBtn = $("#closeBtn");
+    const toast = $("#toast");
 
-      const minDist = (sizePx + otherSize) * 0.5 + buffer;
-      const dx = c.x - o.x;
-      const dy = c.y - o.y;
-      if (dx * dx + dy * dy < minDist * minDist) return false;
+    // pager
+    const pagePrevBtn = $("#pagePrev");
+    const pageNextBtn = $("#pageNext");
+    const pageLabel = $("#pageLabel");
+
+    // ====== 工具 ======
+    const rand = (min, max) => Math.random() * (max - min) + min;
+    const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
+    const clamp = (v, min, max) => Math.min(max, Math.max(min, v));
+
+    // ====== 星星樣式 ======
+    const STAR_TYPES = ["outline", "solid", "striped", "burst", "spiral", "double"];
+    const COLORS = ["#4CC9F0", "#A78BFA", "#F472B6", "#F59E0B", "#22C55E", "#EF4444", "#60A5FA", "#FDE047"];
+
+    function createStarSVG(type, color) {
+      const starPath = "M50 6 L61 36 L93 36 L67 54 L77 84 L50 66 L23 84 L33 54 L7 36 L39 36 Z";
+      const stroke = color, strokeWidth = 4, fillSoft = "rgba(255,255,255,0.06)";
+
+      if (type === "outline") {
+        return `<svg viewBox="0 0 100 100" aria-hidden="true">
+          <path d="${starPath}" fill="${fillSoft}" stroke="${stroke}" stroke-width="${strokeWidth}"
+            stroke-linejoin="round" stroke-linecap="round"/>
+        </svg>`;
+      }
+      if (type === "solid") {
+        return `<svg viewBox="0 0 100 100" aria-hidden="true">
+          <path d="${starPath}" fill="${color}" opacity="0.92" />
+          <path d="${starPath}" fill="none" stroke="rgba(255,255,255,0.45)" stroke-width="2"
+            stroke-linejoin="round" stroke-linecap="round"/>
+        </svg>`;
+      }
+      if (type === "striped") {
+        const clipId = "clip_" + Math.random().toString(16).slice(2);
+        return `<svg viewBox="0 0 100 100" aria-hidden="true">
+          <defs><clipPath id="${clipId}"><path d="${starPath}"/></clipPath></defs>
+          <path d="${starPath}" fill="${fillSoft}" stroke="${stroke}" stroke-width="${strokeWidth}"
+            stroke-linejoin="round" stroke-linecap="round"/>
+          <g clip-path="url(#${clipId})" opacity="0.95">
+            ${Array.from({ length: 8 }).map((_, i) => `
+              <path d="M-10 ${18 + i * 10} L110 ${8 + i * 10}" stroke="${color}" stroke-width="6" opacity="0.55" />
+            `).join("")}
+          </g>
+        </svg>`;
+      }
+      if (type === "burst") {
+        return `<svg viewBox="0 0 120 120" aria-hidden="true">
+          <g transform="translate(10 10)">
+            <path d="${starPath}" fill="${fillSoft}" stroke="${stroke}" stroke-width="${strokeWidth}"
+              stroke-linejoin="round" stroke-linecap="round"/>
+          </g>
+          ${[0, 60, 120, 180, 240, 300].map(a => `
+            <path d="M60 6 L60 18" stroke="${color}" stroke-width="4" stroke-linecap="round"
+              transform="rotate(${a} 60 60)" opacity="0.9"/>
+          `).join("")}
+        </svg>`;
+      }
+      if (type === "spiral") {
+        return `<svg viewBox="0 0 120 120" aria-hidden="true">
+          <g transform="translate(10 10)">
+            <path d="${starPath}" fill="${fillSoft}" stroke="${stroke}" stroke-width="${strokeWidth}"
+              stroke-linejoin="round" stroke-linecap="round"/>
+          </g>
+          <path d="M60 60
+                   m -18 0
+                   a 18 18 0 1 0 36 0
+                   a 10 10 0 1 1 -20 0
+                   a 5 5 0 1 0 10 0"
+                fill="none" stroke="${color}" stroke-width="4" stroke-linecap="round" opacity="0.9"/>
+        </svg>`;
+      }
+      return `<svg viewBox="0 0 100 100" aria-hidden="true">
+        <path d="${starPath}" fill="${fillSoft}" stroke="${stroke}" stroke-width="${strokeWidth}"
+          stroke-linejoin="round" stroke-linecap="round"/>
+        <path d="M50 18 L58 40 L81 40 L62 53 L69 74 L50 61 L31 74 L38 53 L19 40 L42 40 Z"
+          fill="none" stroke="${color}" stroke-width="3" opacity="0.85"
+          stroke-linejoin="round" stroke-linecap="round"/>
+      </svg>`;
     }
-    return true;
-  }
 
-  // ✅ 對外使用：最多嘗試 N 次，挑一個不重疊的位置
-  function genPositionAvoidPanel(sizePx = 56) {
-    const tries = 22;
-    let last = genCandidate01(sizePx);
-    if (starDocCache.size === 0) return last;
-
-    for (let i = 0; i < tries; i++) {
-      const cand = genCandidate01(sizePx);
-      last = cand;
-      if (isNonOverlapping01(cand, sizePx)) return cand;
+    // ====== 計數 ======
+    function updateCounter() {
+      const len = inputContent.value.length;
+      counter.textContent = `${len} / 50`;
+      counter.classList.toggle("bad", len > 50);
     }
-    // 如果星星很密集，找不到完全不重疊的，就回傳最後一次（至少避開面板/邊界）
-    return last;
-  }
+    inputContent.addEventListener("input", updateCounter);
+    updateCounter();
 
-  // ====== 渲染星星（diff 渲染） ======
-  const rendered = new Map();     // id -> element
-  const starDocCache = new Map(); // id -> starDoc（用於防重疊、resize 重排、點擊顯示最新內容）
-
-  function ensureStarElement(id) {
-    if (rendered.has(id)) return rendered.get(id);
-    const el = document.createElement("div");
-    el.className = "star";
-    el.dataset.id = id;
-    el.title = "點我打開";
-    sky.appendChild(el);
-    rendered.set(id, el);
-    return el;
-  }
-
-  function removeStarElement(id) {
-    const el = rendered.get(id);
-    if (el) el.remove();
-    rendered.delete(id);
-    starDocCache.delete(id);
-  }
-
-  function applyStarPosition(el, starDoc) {
-    const { x, y } = toAbsXY(starDoc.x, starDoc.y);
-    el.style.left = x + "px";
-    el.style.top = y + "px";
-  }
-
-  function placeStar(el, starDoc) {
-    applyStarPosition(el, starDoc);
-
-    // size
-    el.style.setProperty("--size", (starDoc.size || 56) + "px");
-
-    // 只有 type/color 變了才重建 SVG（省 CPU）
-    const sig = `${starDoc.type}|${starDoc.color}`;
-    if (el.dataset.sig !== sig) {
-      el.innerHTML = createStarSVG(starDoc.type, starDoc.color);
-      el.dataset.sig = sig;
+    // ====== Toast ======
+    let toastTimer = null;
+    function showToast(text) {
+      toast.textContent = text;
+      toast.classList.add("show");
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => toast.classList.remove("show"), 1800);
     }
 
-    // click 只綁一次
-    if (!el.dataset.bound) {
-      el.dataset.bound = "1";
-      el.onclick = () => {
-        if (el.classList.contains("opening")) return;
-        el.classList.add("opening");
-        const onEnd = () => {
-          el.removeEventListener("animationend", onEnd);
-          el.classList.remove("opening");
-          openModal(starDocCache.get(el.dataset.id));
-        };
-        el.addEventListener("animationend", onEnd);
+    // ====== Modal ======
+    function formatMessage(to, content) {
+      return `給【${to}】\n\n${content}`;
+    }
+    function openModal(starDoc) {
+      if (!starDoc) return;
+      msgBox.textContent = formatMessage(starDoc.to, starDoc.content);
+      modal.classList.add("open");
+    }
+    function closeModal() { modal.classList.remove("open"); }
+    closeBtn.addEventListener("click", closeModal);
+    modal.addEventListener("click", (e) => { if (e.target === modal) closeModal(); });
+    window.addEventListener("keydown", (e) => { if (e.key === "Escape") closeModal(); });
+
+    // ====== 位置：相對座標 (0..1)，動態避開底部面板 + 防重疊 ======
+    function getPanelTop01() {
+      const panel = document.querySelector(".panel");
+      if (!panel) return 0.8;
+      const rect = panel.getBoundingClientRect();
+      const vh = window.innerHeight || 1;
+      return clamp(rect.top / vh, 0.15, 0.98);
+    }
+
+    function toAbsXY(x01, y01) {
+      return { x: x01 * window.innerWidth, y: y01 * window.innerHeight };
+    }
+
+    function genCandidate01(sizePx = 56) {
+      const vw = window.innerWidth || 1;
+      const vh = window.innerHeight || 1;
+
+      const padPx = Math.max(sizePx * 0.65, 22);
+      const padX = padPx / vw;
+      const padY = padPx / vh;
+
+      const panelTop01 = getPanelTop01();
+      const yMax = clamp(panelTop01 - padY, 0.12, 1 - padY);
+
+      return {
+        x: rand(padX, 1 - padX),
+        y: rand(padY, yMax),
       };
     }
-  }
 
-  // ====== Auth：匿名登入 ======
-  let myUid = null;
-  async function ensureAnonAuth() {
-    return new Promise((resolve, reject) => {
-      onAuthStateChanged(auth, async (user) => {
-        try {
-          if (!user) {
-            await signInAnonymously(auth);
-            return;
-          }
-          myUid = user.uid;
-          resolve(user);
-        } catch (e) {
-          reject(e);
-        }
-      });
-    });
-  }
+    function isNonOverlapping01(candidate, sizePx) {
+      const c = toAbsXY(candidate.x, candidate.y);
+      const buffer = 10;
 
-  // ====== Firestore 即時監聽（最新 N 顆） ======
-  const MAX_RENDER = 150;
-  const starsRef = collection(db, "stars");
-  const q = query(starsRef, orderBy("createdAt", "desc"), limit(MAX_RENDER));
+      // 只跟「目前頁」星星做防重疊（視覺上最合理）
+      for (const s of starDocCache.values()) {
+        const otherSize = (typeof s.size === "number" ? s.size : 56);
+        const o = toAbsXY(s.x, s.y);
 
-  function startListener() {
-    onSnapshot(q, (snap) => {
-      const alive = new Set();
+        const minDist = (sizePx + otherSize) * 0.5 + buffer;
+        const dx = c.x - o.x;
+        const dy = c.y - o.y;
+        if (dx * dx + dy * dy < minDist * minDist) return false;
+      }
+      return true;
+    }
 
-      snap.forEach(d => {
-        alive.add(d.id);
+    function genPositionAvoidPanel(sizePx = 56) {
+      const tries = 22;
+      let last = genCandidate01(sizePx);
+      if (starDocCache.size === 0) return last;
+
+      for (let i = 0; i < tries; i++) {
+        const cand = genCandidate01(sizePx);
+        last = cand;
+        if (isNonOverlapping01(cand, sizePx)) return cand;
+      }
+      return last;
+    }
+
+    // ====== 渲染星星（diff 渲染） ======
+    const rendered = new Map();     // id -> element
+    const starDocCache = new Map(); // id -> starDoc（目前頁：防重疊/resize/點擊）
+
+    function ensureStarElement(id) {
+      if (rendered.has(id)) return rendered.get(id);
+      const el = document.createElement("div");
+      el.className = "star";
+      el.dataset.id = id;
+      el.title = "點我打開";
+      sky.appendChild(el);
+      rendered.set(id, el);
+      return el;
+    }
+
+    function removeStarElement(id) {
+      const el = rendered.get(id);
+      if (el) el.remove();
+      rendered.delete(id);
+      starDocCache.delete(id);
+    }
+
+    function applyStarPosition(el, starDoc) {
+      const { x, y } = toAbsXY(starDoc.x, starDoc.y);
+      el.style.left = x + "px";
+      el.style.top = y + "px";
+    }
+
+    function placeStar(el, starDoc) {
+      applyStarPosition(el, starDoc);
+
+      el.style.setProperty("--size", (starDoc.size || 56) + "px");
+
+      const sig = `${starDoc.type}|${starDoc.color}`;
+      if (el.dataset.sig !== sig) {
+        el.innerHTML = createStarSVG(starDoc.type, starDoc.color);
+        el.dataset.sig = sig;
+      }
+
+      if (!el.dataset.bound) {
+        el.dataset.bound = "1";
+        el.onclick = () => {
+          if (el.classList.contains("opening")) return;
+          el.classList.add("opening");
+          const onEnd = () => {
+            el.removeEventListener("animationend", onEnd);
+            el.classList.remove("opening");
+            openModal(starDocCache.get(el.dataset.id));
+          };
+          el.addEventListener("animationend", onEnd);
+        };
+      }
+    }
+
+    function clearAllStarsFromUI() {
+      for (const id of Array.from(rendered.keys())) {
+        removeStarElement(id);
+      }
+      starDocCache.clear();
+    }
+
+    // 只渲染一頁（30 顆）
+    function renderDocs(docs) {
+      clearAllStarsFromUI();
+
+      docs.forEach((d) => {
         const data = d.data();
         if (!data || typeof data.x !== "number" || typeof data.y !== "number") return;
 
@@ -749,89 +697,214 @@
           size: data.size,
         };
 
-        // 快取：防重疊 + 點擊顯示最新內容 + resize 重排
         starDocCache.set(d.id, starDoc);
 
         const el = ensureStarElement(d.id);
         placeStar(el, starDoc);
       });
+    }
 
-      // 清掉不在最新清單內的星星
-      for (const id of Array.from(rendered.keys())) {
-        if (!alive.has(id)) removeStarElement(id);
-      }
-    }, (err) => {
-      console.error(err);
-      showToast("讀取星空失敗（請確認 Firestore 規則/啟用狀態）。");
+    // resize：依目前頁快取重排
+    let resizeTimer = null;
+    window.addEventListener("resize", () => {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(() => {
+        for (const [id, el] of rendered.entries()) {
+          const doc = starDocCache.get(id);
+          if (!doc) continue;
+          applyStarPosition(el, doc);
+        }
+      }, 120);
     });
-  }
 
-  // resize：依快取重排現有星星位置
-  let resizeTimer = null;
-  window.addEventListener("resize", () => {
-    clearTimeout(resizeTimer);
-    resizeTimer = setTimeout(() => {
-      for (const [id, el] of rendered.entries()) {
-        const doc = starDocCache.get(id);
-        if (!doc) continue;
-        applyStarPosition(el, doc);
+    // ====== Auth：匿名登入 ======
+    let myUid = null;
+    async function ensureAnonAuth() {
+      return new Promise((resolve, reject) => {
+        onAuthStateChanged(auth, async (user) => {
+          try {
+            if (!user) {
+              await signInAnonymously(auth);
+              return;
+            }
+            myUid = user.uid;
+            resolve(user);
+          } catch (e) {
+            reject(e);
+          }
+        });
+      });
+    }
+
+    // ====== Firestore 分頁（每頁 30） ======
+    const PAGE_SIZE = 30;
+    const starsRef = collection(db, "stars");
+
+    // 用 createdAt desc：最新在前
+    // 若你之後加 createdAtMs，這裡改成 orderBy("createdAtMs","desc") 會更穩
+    const baseQuery = () => query(starsRef, orderBy("createdAt", "desc"), limit(PAGE_SIZE));
+    const pageQueryAfter = (cursorDoc) => query(starsRef, orderBy("createdAt", "desc"), startAfter(cursorDoc), limit(PAGE_SIZE));
+
+    let pageIndex = 1;           // 1 = 最新頁
+    let latestUnsub = null;      // 只有頁1使用 onSnapshot
+    const pageCache = new Map(); // pageIndex -> docs[]
+    const pageCursor = new Map();// pageIndex -> { first, last }
+
+    function setPageUI(nextEnabled) {
+      pageLabel.textContent = pageIndex === 1 ? "第 1 頁（最新）" : `第 ${pageIndex} 頁`;
+      pagePrevBtn.disabled = (pageIndex === 1);
+      pageNextBtn.disabled = !nextEnabled;
+    }
+
+    function stopLatestSub() {
+      if (latestUnsub) { latestUnsub(); latestUnsub = null; }
+    }
+
+    function subscribeLatest() {
+      stopLatestSub();
+      pageIndex = 1;
+      pageCache.clear();
+      pageCursor.clear();
+
+      setPageUI(false);
+
+      latestUnsub = onSnapshot(baseQuery(), (snap) => {
+        const docs = snap.docs;
+        pageCache.set(1, docs);
+        pageCursor.set(1, { first: docs[0] || null, last: docs[docs.length - 1] || null });
+
+        renderDocs(docs);
+
+        setPageUI(docs.length === PAGE_SIZE);
+      }, (err) => {
+        console.error(err);
+        showToast("讀取星空失敗（請確認 Firestore 規則/啟用狀態）。");
+      });
+    }
+
+    async function loadOlderPage() {
+      const current = pageCursor.get(pageIndex);
+      const cursor = current?.last;
+      if (!cursor) return;
+
+      stopLatestSub();
+
+      const nextIndex = pageIndex + 1;
+
+      // 已載入過就直接用快取
+      if (pageCache.has(nextIndex)) {
+        pageIndex = nextIndex;
+        const docs = pageCache.get(nextIndex);
+        renderDocs(docs);
+        setPageUI((docs.length === PAGE_SIZE));
+        return;
       }
-    }, 120);
-  });
 
-  // ====== 發送：直接 addDoc（含防重疊抽點） ======
-  sendBtn.addEventListener("click", async () => {
-    const to = inputTo.value.trim();
-    const content = inputContent.value.trim();
+      const snap = await getDocs(pageQueryAfter(cursor));
+      const docs = snap.docs;
 
-    if (!to) { showToast("請先填「傳情對象」。"); inputTo.focus(); return; }
-    if (!content) { showToast("請先填「傳情內容」。"); inputContent.focus(); return; }
-    if (content.length > 50) { showToast("內容超過 50 字。"); inputContent.focus(); return; }
+      pageIndex = nextIndex;
+      pageCache.set(pageIndex, docs);
+      pageCursor.set(pageIndex, { first: docs[0] || null, last: docs[docs.length - 1] || null });
 
-    // --- 根據螢幕寬度計算縮放比例 ---
-    const baseScale = Math.max(window.innerWidth / 1440, 0.4);
-    const size = Math.round(rand(40, 70) * baseScale);
-
-    // ✅ 防重疊位置：會自動避開面板 + 盡量不靠近其他星星
-    const { x, y } = genPositionAvoidPanel(size);
-
-    const docData = {
-      to,
-      content,
-      ownerUid: myUid,
-      x, y,
-      type: pick(STAR_TYPES),
-      color: pick(COLORS),
-      size,
-      createdAt: serverTimestamp(),
-    };
-
-    sendBtn.disabled = true;
-    try {
-      await addDoc(starsRef, docData);
-      inputContent.value = "";
-      updateCounter();
-      showToast("已發送。");
-    } catch (e) {
-      console.error(e);
-      showToast("發送失敗（請確認已開 Anonymous Auth / Firestore rules）。");
-    } finally {
-      sendBtn.disabled = false;
+      renderDocs(docs);
+      setPageUI(docs.length === PAGE_SIZE);
     }
-  });
 
-  // ====== 啟動 ======
-  (async () => {
-    try {
-      await ensureAnonAuth();
-      startListener();
-    } catch (e) {
-      console.error(e);
-      showToast("匿名登入失敗（請確認 Firebase Auth 已啟用）。");
+    async function goNewerPage() {
+      if (pageIndex <= 1) return;
+
+      const prevIndex = pageIndex - 1;
+
+      // 回到最新頁：恢復即時監聽，並確保永遠最新
+      if (prevIndex === 1) {
+        subscribeLatest();
+        return;
+      }
+
+      pageIndex = prevIndex;
+
+      if (pageCache.has(pageIndex)) {
+        const docs = pageCache.get(pageIndex);
+        renderDocs(docs);
+        setPageUI(docs.length === PAGE_SIZE);
+        return;
+      }
+
+      // 理論上不會走到這裡（因為你是逐頁翻），保險：回到最新
+      subscribeLatest();
     }
-  })();
-</script>
+
+    pageNextBtn.addEventListener("click", () => {
+      loadOlderPage().catch((e) => {
+        console.error(e);
+        showToast("換到較舊頁失敗。");
+      });
+    });
+
+    pagePrevBtn.addEventListener("click", () => {
+      goNewerPage().catch((e) => {
+        console.error(e);
+        showToast("換到較新頁失敗。");
+      });
+    });
+
+    // ====== 發送：直接 addDoc（含防重疊抽點） ======
+    sendBtn.addEventListener("click", async () => {
+      const to = inputTo.value.trim();
+      const content = inputContent.value.trim();
+
+      if (!to) { showToast("請先填「傳情對象」。"); inputTo.focus(); return; }
+      if (!content) { showToast("請先填「傳情內容」。"); inputContent.focus(); return; }
+      if (content.length > 50) { showToast("內容超過 50 字。"); inputContent.focus(); return; }
+
+      // 縮放：避免手機太小
+      const baseScale = Math.max(window.innerWidth / 1440, 0.4);
+      const size = Math.round(rand(40, 70) * baseScale);
+
+      // ✅ 位置：避開面板 + 防重疊（以目前頁為基準）
+      const { x, y } = genPositionAvoidPanel(size);
+
+      const docData = {
+        to,
+        content,
+        ownerUid: myUid,
+        x, y,
+        type: pick(STAR_TYPES),
+        color: pick(COLORS),
+        size,
+        createdAt: serverTimestamp(),
+      };
+
+      sendBtn.disabled = true;
+      try {
+        await addDoc(starsRef, docData);
+        inputContent.value = "";
+        updateCounter();
+
+        // ✅ 發送後回到最新頁（讓使用者看到自己剛送出的星星）
+        showToast("已發送（回到最新頁）。");
+        subscribeLatest();
+      } catch (e) {
+        console.error(e);
+        showToast("發送失敗（請確認已開 Anonymous Auth / Firestore rules）。");
+      } finally {
+        sendBtn.disabled = false;
+      }
+    });
+
+    // ====== 啟動：永遠顯示最新頁 ======
+    (async () => {
+      try {
+        await ensureAnonAuth();
+        subscribeLatest();
+      } catch (e) {
+        console.error(e);
+        showToast("匿名登入失敗（請確認 Firebase Auth 已啟用）。");
+      }
+    })();
+  </script>
 
 </body>
-
 </html>
+
