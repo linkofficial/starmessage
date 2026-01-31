@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>管理員面板｜星空傳情</title>
+  <title>管理面板｜星空傳情</title>
   <style>
     body{ margin:0; font-family: ui-sans-serif, system-ui, -apple-system, "Noto Sans TC", "Microsoft JhengHei", sans-serif; background:#070A18; color:rgba(255,255,255,0.9); }
     .wrap{ max-width: 880px; margin: 0 auto; padding: 22px; }
@@ -25,10 +25,9 @@
 </head>
 <body>
   <div class="wrap">
-    <h1 style="margin:0 0 10px;">管理員面板</h1>
+    <h1 style="margin:0 0 10px;">星空後臺</h1>
     <div class="muted">
-      用 Email/Password 登入後，如果你的 UID 有被加入 <span class="mono">admins/{uid}</span>，
-      才能「一鍵備份」與「一鍵刪除」。
+      管理員才能「一鍵備份」與「一鍵刪除」。
     </div>
 
     <div class="card" id="loginCard">
@@ -46,7 +45,6 @@
 
     <div class="card" id="adminCard" style="display:none;">
       <h2 style="margin:0 0 8px; font-size:16px;">管理操作</h2>
-      <div class="muted">你的 UID：<span id="uid" class="mono"></span></div>
       <div class="muted">Admin 狀態：<span id="isAdmin" class="mono"></span></div>
 
       <div class="sep"></div>
@@ -210,9 +208,7 @@
       $("#adminCard").style.display = "block";
 
       if (!ok){
-        log(`<span class="bad">你尚未被加入 admins/{uid}，無法執行刪除/備份。</span><br/>
-             <span class="muted">請到 Firestore Console 建立文件：</span>
-             <span class="mono">admins/${user.uid}</span>（欄位隨便填 enabled:true）`);
+        log(`<span class="bad">你尚未被加入 admins/{uid}，無法執行刪除/備份。</span><br/>`);
         backupBtn.disabled = true;
         deleteBtn.disabled = true;
         return;
